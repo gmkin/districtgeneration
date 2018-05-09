@@ -33,7 +33,7 @@ public class Algorithm implements Serializable {
 		this.state = state;
 		this.measures = measures;
 		this.constraints = constraints;
-                this.masterMoves = new ArrayList<>();
+		this.masterMoves = new ArrayList<>();
 	}
 
 	public State getState() {
@@ -75,10 +75,6 @@ public class Algorithm implements Serializable {
 	public void setCurrMoves(ArrayList<Move> currMoves) {
 		this.currMoves = currMoves;
 	}
-        
-	public void clearCurrMoves(){
-		this.currMoves.clear();
-	}
 
 	public void addConstraint(Constraint constraint) {
 		constraints.put(constraint, true);
@@ -102,9 +98,11 @@ public class Algorithm implements Serializable {
 	}
 
 	public void runAlgorithm() {
+		System.out.printf("Original Goodness: %f%n", state.getGoodness());
 		currMoves = new ArrayList<>();
 		IntStream.range(0, Constants.MAX_ITERATIONS).forEach(iteration -> step());
 		masterMoves.addAll(currMoves);
+		System.out.printf("New Goodness: %f%n", state.getGoodness());
 	}
 
 	private void step() {

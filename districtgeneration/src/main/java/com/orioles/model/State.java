@@ -127,11 +127,10 @@ public class State implements Cloneable, Serializable {
 
     @Override
     public Object clone() {
-        State state = new State();
-        state.name = this.name;
+        State state = new State(congressionalDistricts.stream()
+				.map(cd -> (CongressionalDistrict) cd.clone()).collect(Collectors.toList()), this.name);
         state.stat = this.stat;
         state.goodness = this.goodness;
-        state.congressionalDistricts = this.congressionalDistricts;
         return state;
     }
 

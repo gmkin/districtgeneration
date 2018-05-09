@@ -153,6 +153,19 @@ public class Precinct implements Cloneable, Serializable {
         }
     }
 
+    @Override
+	public Object clone() {
+		Precinct newPrecinct = new Precinct(this.coordinates);
+		newPrecinct.setName(this.name);
+		newPrecinct.setGeojson(this.geojson);
+		newPrecinct.setAdjacentPrecincts(this.adjacentPrecincts);
+		newPrecinct.setStats(this.stats);
+		newPrecinct.setArea(this.area);
+		newPrecinct.setId(this.id);
+		newPrecinct.setBorder();
+    	return null;
+	}
+
 	@Override
 	public String toString() {
     	return String.format("Precinct(%s (%d), area=%f)", name, id.getId(), area);

@@ -10,6 +10,7 @@ import com.orioles.model.*;
 import com.orioles.persistence.PDemoRepository;
 import com.orioles.persistence.PrecinctRepository;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.orioles.persistence.UsermovesRepository;
@@ -75,8 +76,9 @@ public class StateController {
     }
 
     @PostMapping("/getMaps")
-    public int getMaps(String user) {
-        return userMovesRepository.findByUsername(user).size();
+    public List<Integer> getMaps(String user) {
+        return userMovesRepository.findByUsername(user).stream()
+				.map(Usermoves::getUselessid).collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")

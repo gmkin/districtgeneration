@@ -150,6 +150,24 @@ public class CongressionalDistrict implements Cloneable {
 	}
 
 	@Override
+	public Object clone() {
+		CongressionalDistrict newCD = new CongressionalDistrict();
+		newCD.setID(this.ID);
+		newCD.setGoodness(this.goodness);
+		newCD.isDirty = true;
+		newCD.stat = this.stat;
+		newCD.area = this.area;
+
+		List<Precinct> newPrecincts = precincts.stream().map(p -> (Precinct) p.clone()).collect(Collectors.toList());
+		newPrecincts.forEach(p -> p.setDistrict(newCD));
+		newCD.setPrecincts(newPrecincts);
+
+		Set<Integer> pSet = newPrecincts.stream().map(Precinct::getIdentifier).collect(Collectors.toSet());
+		newCD.setpBorders(newPrecincts.stream().filter(p -> pSet.contains(p.getIdentifier())).collect(Collectors.toList()));
+		return newCD;
+	}
+
+	@Override
 	public boolean equals(Object o) {
 		if (this == o)
 			return true;
