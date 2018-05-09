@@ -14,6 +14,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.orioles.persistence.UsermovesRepository;
+import org.jboss.logging.annotations.Pos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -173,5 +174,27 @@ public class StateController {
 		return ((State) httpSession.getAttribute(Constants.STATE)).getDistrictByID(cdID).summarize();
 	}
 
-	
+	@GetMapping("/getStateInfo")
+	public Stats getStateInfo() {
+		return ((State) httpSession.getAttribute(Constants.STATE)).summarize();
+	}
+
+	@PostMapping("/getDiff")
+	public Map<Integer, Double> getDiff() {			// get differences between curr and gen
+		State s = (State) httpSession.getAttribute(Constants.STATE);
+		State orig = getStateByName(s.getName());
+
+		Map<Integer, Double> res = new HashMap<>();
+		s.getCongressionalDistricts()
+				.forEach(cd -> res.put(cd.getID(), cd.getGoodness() - orig.getDistrictByID(cd.getID()).getGoodness()));
+    	return res;
+	}
+
+	@PostMapping("/goodnessPanel")
+	public Map<Integer, Double> goodnessPanel() {		// CD -> goodness
+    	State s = (State) httpSession.getAttribute(Constants.STATE);
+    	Map<Integer, Double> res = new HashMap<>();
+    	s.getCongressionalDistricts().forEach(cd -> res.put(cd.getID(), cd.getGoodness()));
+    	return res;
+	}
 }

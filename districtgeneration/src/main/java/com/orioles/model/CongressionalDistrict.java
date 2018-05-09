@@ -57,7 +57,7 @@ public class CongressionalDistrict implements Cloneable {
 		this.pBorders = pBorders;
 	}
 
-	int getID() {
+	public int getID() {
 		return ID;
 	}
 
@@ -65,7 +65,7 @@ public class CongressionalDistrict implements Cloneable {
 		this.ID = ID;
 	}
 
-	double getGoodness() {
+	public double getGoodness() {
 		return goodness;
 	}
 
