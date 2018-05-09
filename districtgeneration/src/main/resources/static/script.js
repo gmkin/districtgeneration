@@ -22,10 +22,6 @@ L.tileLayer('https://api.tiles.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y
     id: 'dark-v9'
 }).addTo(mymap);
 
-function resetMap() {
-    mapFocus('va')
-}
-
 function onEachFeature(feature, layer) {
     let properties = [];
     const exclusions = {NEIGHBORS: 1};
@@ -101,18 +97,13 @@ function precinctStyle(feature) {
     };
 }
 
-// L.geoJSON(vaGeoData, {
-//     onEachFeature: onEachFeature,
-//     style: precinctStyle
-// }).addTo(mymap);
-// L.geoJSON(nm, {
-//     onEachFeature: onEachFeature,
-//     style: precinctStyle
-// }).addTo(mymap);
-
 $(document).ready(function(){
     $("#resetMap").click(() => {
         mapFocus($('#stateSelect').val());
+    });
+
+    $('precinctLockedCheckbox').click(() => {
+        $.get(`/lockPrecinct/${selectedState.properties.CODE}`).then(() => console.log("OK!")).catch(() => console.log("ERR!"));
     });
 });
 

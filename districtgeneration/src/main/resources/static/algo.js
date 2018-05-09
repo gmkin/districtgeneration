@@ -18,7 +18,7 @@ function build(state, constraints, measures){
         currentLayer.eachLayer(function(layer){
             let relativeGoodness = 255 - Math.floor(data[layer.feature.properties.CD] / maxGoodness * 255);
             let heat = "#" + relativeGoodness.toString(16) + "0000";
-            console.log(heat);
+            // console.log(heat);
             layer.setStyle({
                 fillColor : heat,
                 fillOpacity : 1

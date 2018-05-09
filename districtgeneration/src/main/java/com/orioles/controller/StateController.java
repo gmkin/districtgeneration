@@ -197,4 +197,17 @@ public class StateController {
     	s.getCongressionalDistricts().forEach(cd -> res.put(cd.getID(), cd.getGoodness()));
     	return res;
 	}
+
+	@GetMapping("/lockPrecinct/{pid}")
+	public String lock(@PathVariable("pid") int pid) {
+		State s = (State) httpSession.getAttribute(Constants.STATE);
+		List<Precinct> ps = s.getAllPrecincts().stream()
+				.filter(p -> p.getIdentifier() == pid).collect(Collectors.toList());
+
+		if (ps.isEmpty())
+			return "Error";
+
+		ps.get(0).setLocked(true);
+		return "OK";
+	}
 }
