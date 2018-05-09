@@ -91,11 +91,6 @@ public class StateController {
 		return algo.getCurrMoves();
 	}
 
-	@GetMapping("/getStateByName")
-	public State getStateName(String stateName) {
-		return getStateByName(stateName.toLowerCase());
-	}
-
 	private State checkCache(String stateName) {
     	if (states == null)
     		states = new HashMap<>();
@@ -104,7 +99,8 @@ public class StateController {
     	return states.containsKey(stateName) ? (State) states.get(stateName).clone() : null;
 	}
 
-	private State getStateByName(String stateName) {
+	@GetMapping("/getStateByName")
+	public State getStateByName(String stateName) {
 		State fromCache = checkCache(stateName.toLowerCase());
     	if (fromCache != null) {
 			httpSession.setAttribute(Constants.STATE, fromCache);
@@ -176,4 +172,6 @@ public class StateController {
 	public Stats getCDInfo(int cdID) {
 		return ((State) httpSession.getAttribute(Constants.STATE)).getDistrictByID(cdID).summarize();
 	}
+
+	
 }
