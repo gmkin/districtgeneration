@@ -93,7 +93,7 @@ public class State implements Cloneable, Serializable {
     	Map<Integer, Double> gerry = new HashMap<>();
         congressionalDistricts.stream()
                 .filter(district -> district.getGoodness() < Constants.GERRYMANDERING_THRESHOLD)
-                .sorted(Comparator.comparingDouble(CongressionalDistrict::getGoodness))
+//                .sorted(Comparator.comparingDouble(CongressionalDistrict::getGoodness))
 				.forEach(cd -> gerry.put(cd.getID(), cd.getGoodness()));
         return gerry;
     }
@@ -103,7 +103,7 @@ public class State implements Cloneable, Serializable {
             double goodness = measures.keySet().stream()
                     .mapToDouble(key -> key.calculateGoodness(cd, this) * measures.get(key)).sum();
             cd.setGoodness(goodness / measures.values().stream().filter(v -> v!= 0).count() / 100);
-            System.out.printf(">>>> Goodness of ID %d: %s\n", cd.getID(), goodness);
+//            System.out.printf(">>>> Goodness of ID %d: %s\n", cd.getID(), goodness);
         }
     }
 
