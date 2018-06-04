@@ -2,6 +2,7 @@ package com.orioles.controller;
 
 import com.google.gson.Gson;
 import com.orioles.constants.Constants;
+import com.orioles.districtgeneration.AllMeasures;
 import com.orioles.exceptions.NoSuchStateException;
 import com.orioles.helper_model.Polygon;
 import com.orioles.model.*;
@@ -181,5 +182,11 @@ public class StateController {
 
 		ps.get(0).setLocked(true);
 		return "OK";
+	}
+
+	@GetMapping("/perm")
+	public double perm(String state) {
+    	return states.getOrDefault(state, states.get(Constants.VA)).getCongressionalDistricts().stream()
+				.mapToDouble(CongressionalDistrict::getPerimeter).sum();
 	}
 }

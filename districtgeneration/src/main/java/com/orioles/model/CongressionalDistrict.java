@@ -120,7 +120,7 @@ public class CongressionalDistrict implements Cloneable {
 	@JsonIgnore
 	public double getPerimeter() {
 		Set<Edge> allEdges = new HashSet<>();
-		precincts.parallelStream()
+		precincts.stream()
 				.map(Precinct::getCoordinates)
 				.flatMap(Collection::stream)
 				.map(Polygon::getAllEdges)
