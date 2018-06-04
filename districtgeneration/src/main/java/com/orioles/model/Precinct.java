@@ -125,7 +125,7 @@ public class Precinct implements Cloneable, Serializable {
         this.coordinates = coordinates;
     }
 
-    public List<Polygon> getCoordinates() {
+    public List<Polygon> getAllPolygons() {
         return coordinates;
     }
 
