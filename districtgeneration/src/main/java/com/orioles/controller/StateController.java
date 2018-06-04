@@ -2,19 +2,12 @@ package com.orioles.controller;
 
 import com.google.gson.Gson;
 import com.orioles.constants.Constants;
-import com.orioles.districtgeneration.Coordinate;
-import com.orioles.districtgeneration.Edge;
 import com.orioles.exceptions.NoSuchStateException;
 import com.orioles.helper_model.Polygon;
 import com.orioles.model.*;
 import com.orioles.persistence.PDemoRepository;
 import com.orioles.persistence.PrecinctRepository;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.orioles.persistence.UsermovesRepository;
-import org.jboss.logging.annotations.Pos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 public class StateController {
@@ -108,57 +103,41 @@ public class StateController {
 			return fromCache;
 		}
 
+		long time = System.nanoTime();
 		List<Precinct> precinctList = precinctRepository.findByIdState(stateName);
-		List<CongressionalDistrict> cds = new ArrayList<>();
-		for(int distID : precinctList.stream().mapToInt(Precinct::getCD).distinct().toArray()) {
-			CongressionalDistrict cd = new CongressionalDistrict(distID);
-			List<Precinct> precinctInCD = precinctList.stream()
-					.filter(p -> p.getCD() == distID).collect(Collectors.toList());
+		Map<Integer, List<Precinct>> p1 = precinctList.stream()
+				.collect(Collectors.groupingBy(Precinct::getCD, Collectors.toList()));
+		List<CongressionalDistrict> cds = p1.keySet().parallelStream()
+				.map(distID -> new CongressionalDistrict(p1.get(distID), distID)).collect(Collectors.toList());
 
-			cd.setPrecincts(precinctInCD);
-			precinctInCD.forEach(p -> setupPrecinct(p, cd));
-			cds.add(cd);
-		}
-
+		System.out.printf("Partition: %d", System.nanoTime() - time);
+		precinctList.forEach(this::setupPrecinct);
+		System.out.printf("Precinct setup: %d", System.nanoTime() - time);
+		precinctList.forEach(this::processAdj);
+		System.out.printf("Process Adj: %d", System.nanoTime() - time);
 		State s = new State(cds, stateName);
-		processAdj(s);
-
 		states.put(stateName, s);
 		httpSession.setAttribute(Constants.STATE, s);
+		System.out.printf("End: %d", System.nanoTime() - time);
 		return s;
 	}
 
 	@SuppressWarnings("unchecked")
 	private List<Polygon> parseCoordinates(Object coords) {		// Assumes coords is a multi-polygon
 		List<List<List<List<Double>>>> coordinates = (List<List<List<List<Double>>>>) coords;
-		return coordinates.stream().map(poly ->
-				new Polygon(poly.stream().map(this::obtainEdges).collect(Collectors.toList())))
-				.collect(Collectors.toList());
+		return coordinates.stream().map(Polygon::new).collect(Collectors.toList());
 	}
 
-	private List<Edge> obtainEdges(List<List<Double>> rawEdges) {
-		List<Edge> edges = new ArrayList<>();
-		final List<Coordinate> coordList = rawEdges.stream()
-				.map(pt -> new Coordinate(pt.get(0), pt.get(1))).collect(Collectors.toList());
-		for (int i = 0; i < coordList.size(); i++)
-			edges.add(new Edge(coordList.get(i), coordList.get((i + 1) % coordList.size())));
-		return edges;
-	}
-
-	private void setupPrecinct(Precinct p, CongressionalDistrict cd) {
-		p.setDistrict(cd);
+	private void setupPrecinct(Precinct p) {
 		p.setStats(pDemoRepository.findByPid(p.getIdentifier()).makeStat());
-
 		Map json = gson.fromJson(p.getGeojson(), Map.class);
 		p.setCoordinates(parseCoordinates(((Map)json.get(Constants.GEOMETRY)).get(Constants.COORDINATES)));
 		allPrecincts.put(p.getIdentifier(), p);
 	}
 
-	private void processAdj(State s) {
-		for (Precinct p : s.getAllPrecincts()) {
-			Map json = gson.fromJson(p.getGeojson(), Map.class);
-			p.setAdjacentPrecincts(parseAdjacent(((Map)json.get(Constants.PROPERTIES)).get(Constants.NEIGHBORS)));
-		}
+	private void processAdj(Precinct p) {
+		Map json = gson.fromJson(p.getGeojson(), Map.class);
+		p.setAdjacentPrecincts(parseAdjacent(((Map)json.get(Constants.PROPERTIES)).get(Constants.NEIGHBORS)));
 	}
 
 	@SuppressWarnings("unchecked")

@@ -1,11 +1,9 @@
 package com.orioles.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.orioles.districtgeneration.Coordinate;
 import com.orioles.districtgeneration.Edge;
 import com.orioles.helper_model.Polygon;
 
-import javax.persistence.Transient;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,7 +23,7 @@ public class CongressionalDistrict implements Cloneable {
 
 	public CongressionalDistrict() {}
 
-	public CongressionalDistrict(int ID) {
+	private CongressionalDistrict(int ID) {
 		this.ID = ID;
 		this.goodness = -1;
 		this.area = 0;
@@ -35,9 +33,10 @@ public class CongressionalDistrict implements Cloneable {
 	public CongressionalDistrict(List<Precinct> ps, int ID) {
 		this(ID);
 		this.precincts = ps;
+		ps.forEach(p -> p.setDistrict(this));
 	}
 
-	public List<Precinct> getPrecincts() {
+	List<Precinct> getPrecincts() {
 		return precincts;
 	}
 

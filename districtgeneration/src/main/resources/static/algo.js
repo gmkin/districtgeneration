@@ -76,7 +76,8 @@ $(document).ready(function(){
                 currentLayer.eachLayer(function(layer){
                     if (parseInt(layer.feature.properties.CODE) === precinct){
                         layer.setStyle({
-                            fillColor : getColor(dest)
+                            fillColor : getColor(dest),
+                            fillOpacity : 1
                         });
                     }
                 });
