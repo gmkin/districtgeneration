@@ -120,17 +120,14 @@ public class CongressionalDistrict implements Cloneable {
 	@JsonIgnore
 	public double getPerimeter() {
 		Set<Edge> allEdges = new HashSet<>();
-		Set<Edge> repeatedEdges = new HashSet<>();
-		for (Precinct currentPrecinct : precincts) {
-			List<Edge> edges = currentPrecinct.getCoordinates().stream()
-					.map(Polygon::getAllEdges).flatMap(Collection::stream).collect(Collectors.toList());
-			allEdges.addAll(edges.stream().distinct().collect(Collectors.toList()));
-
-			Set<Edge> uniques = new HashSet<>();
-			repeatedEdges.addAll(edges.stream().filter(e -> !uniques.add(e)).collect(Collectors.toList()));
-		}
-		allEdges.removeAll(repeatedEdges);
-		return allEdges.stream().mapToDouble(Edge::calculateDistance).sum();
+		precincts.parallelStream()
+				.map(Precinct::getCoordinates)
+				.flatMap(Collection::stream)
+				.map(Polygon::getAllEdges)
+				.flatMap(Collection::stream)
+				.filter(edge -> !allEdges.add(edge))
+				.forEach(allEdges::remove);
+		return allEdges.parallelStream().mapToDouble(Edge::calculateDistance).sum();
 	}
 
 	public boolean isContigious() {
@@ -141,9 +138,9 @@ public class CongressionalDistrict implements Cloneable {
 		for (Precinct p = pQueue.poll(); pQueue.isEmpty(); p = pQueue.poll())
 			if (p != null && pSet.add(p)) {
 				Precinct finalP = p;
-				pQueue.addAll(p.getAdjacentPrecincts().stream()
+				p.getAdjacentPrecincts().stream()
 						.filter(adj -> !pSet.contains(adj) && adj.getCD() == finalP.getCD())
-						.collect(Collectors.toList()));
+						.forEach(pQueue::add);
 			}
 		return pSet.size() == precincts.size();
 	}

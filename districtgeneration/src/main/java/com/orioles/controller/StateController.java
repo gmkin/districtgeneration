@@ -103,23 +103,17 @@ public class StateController {
 			return fromCache;
 		}
 
-		long time = System.nanoTime();
 		List<Precinct> precinctList = precinctRepository.findByIdState(stateName);
 		Map<Integer, List<Precinct>> p1 = precinctList.stream()
 				.collect(Collectors.groupingBy(Precinct::getCD, Collectors.toList()));
 		List<CongressionalDistrict> cds = p1.keySet().parallelStream()
 				.map(distID -> new CongressionalDistrict(p1.get(distID), distID)).collect(Collectors.toList());
 
-		System.out.printf("Partition: %d", System.nanoTime() - time);
 		precinctList.forEach(this::setupPrecinct);
-		System.out.printf("Precinct setup: %d", System.nanoTime() - time);
 		precinctList.forEach(this::processAdj);
-		System.out.printf("Process Adj: %d", System.nanoTime() - time);
 		State s = new State(cds, stateName);
-		states.put(stateName, s);
 		httpSession.setAttribute(Constants.STATE, s);
-		System.out.printf("End: %d", System.nanoTime() - time);
-		return s;
+		return states.put(stateName, s);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -140,7 +134,6 @@ public class StateController {
 		p.setAdjacentPrecincts(parseAdjacent(((Map)json.get(Constants.PROPERTIES)).get(Constants.NEIGHBORS)));
 	}
 
-	@SuppressWarnings("unchecked")
 	private List<Precinct> parseAdjacent(Object adj) {
 		if (adj == null)		// ie: islands
 			return Collections.emptyList();
